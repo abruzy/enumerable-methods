@@ -2,58 +2,61 @@
 
 module Enumerable
   def my_each
-    if block_given?
-      (0..length - 1).my_each do |i|
-        yield(self[i])
-      end
-    else
-      puts "You didn't pass in a block!"
+    return to_enum(:my_each) unless block_given?
+
+    i = 0
+    while i < size
+      yield(self[i])
+      i += 1
     end
+    self
   end
 
   def my_each_with_index
-    if block_given?
-      (0..length - 1).my_each do |i|
-        yield(self[i], i)
-      end
-    else
-      puts "You didn't pass in a block!"
+    return to_enum(:my_each_with_index) unless block_given?
+
+    i = 0
+    while i < size
+      yield(self[i], i)
+      i += 1
     end
+    self
   end
 
   def my_select
-    if block_given?
-      new_arr = []
-      (0..length - 1).my_each do |i|
-        new_arr.push(self[i]) if yield(self[i])
-      end
-    else
-      puts "You didn't pass in a block!"
-    end
+    return to_enum(:my_select) unless block_given?
+
+    new_arr = []
+    my_each { |element| new_arr << element if yield(element) }
+    new_arr
   end
 
-  def my_all?
-    (0..length - 1).my_each do |element|
-      return false unless yield(element)
+  def my_all?(pattern = nil)
+    unless pattern.nil?
+      return my_all? { |e| pattern.match(e) }
     end
+
+    return my_all? { |e| e } unless block_given?
+
+    my_each { |e| return false unless yield(e) }
     true
   end
 
-  def my_any?
-    (0..length - 1).my_each do |element|
-      return false unless yield(element)
+  def my_any?(pattern = nil)
+    unless pattern.nil?
+      return my_any? { |e| pattern.match(e) }
     end
-    true
+
+    return my_any? { |e| e } unless block_given?
+
+    my_each { |e| return true if yield(e) }
+    false
   end
 
-  def my_none?
-    i = 0
-    while i < size
-      return false if yield(self[i])
+  def my_none?(*pattern)
+    return !my_any?(*pattern) unless block_given?
 
-      i += 1
-    end
-    true
+    !my_any? { |e| yield(e) }
   end
 
   def my_count
@@ -89,46 +92,3 @@ end
 def multiply_els(arr)
   arr.my_inject { |x, y| x * y }
 end
-
-# Test Cases
-# [1,2,3,4].my_each do |x|
-#  puts x
-# end
-
-# [1, 2, 3, 4].my_each_with_index do |x, i|
-#   puts "#{x}: #{i}"
-# end
-
-# even_numbers = []
-# [1,2,3,4,5,6].my_select do |n|
-#   if n.even?
-#     even_numbers << n
-#   end
-# end
-# even_numbers
-
-# [].my_all? { |s| s.size == 1 }
-
-# %w[ant bear cat].my_none? { |word| word.length >= 3 }
-# %w[ant bear cat].all? { |word| word.length >= 4 }
-
-# enu1 = [10, 19, 18]
-# res1 = enu1.my_none? { |num| puts num > 15  }
-
-# length = []
-# length.my_count
-
-# array = ["a", "b", "c"]
-# array.my_map { |string| string.upcase }
-
-# [3, 6, 10].my_inject {|sum, number| sum + number}
-
-# def multiply_els(arr)
-#   arr.my_inject {|x,y| x*y}
-# end
-
-# array = [2,4,5]
-# multiply_els(array)
-
-# double = Proc.new { |n| n * 2 }
-# [1, 2, 3].my_map(&double)
