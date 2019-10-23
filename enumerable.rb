@@ -32,9 +32,7 @@ module Enumerable
   end
 
   def my_all?(pattern = nil)
-    unless pattern.nil?
-      return my_all? { |e| pattern.match(e) }
-    end
+    return my_all? { |e| pattern.match(e) } unless pattern.nil?
 
     return my_all? { |e| e } unless block_given?
 
@@ -43,9 +41,7 @@ module Enumerable
   end
 
   def my_any?(pattern = nil)
-    unless pattern.nil?
-      return my_any? { |e| pattern.match(e) }
-    end
+    return my_any? { |e| pattern.match(e) } unless pattern.nil?
 
     return my_any? { |e| e } unless block_given?
 
