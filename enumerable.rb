@@ -31,45 +31,42 @@ module Enumerable
     new_arr
   end
 
-  def my_all?(classification = nil)
-    test = true
-    checked = classification.class
-    my_each { |item| return false if yield(item) == false } if block_given?
-    my_each { |item| return false unless item.class == classification } if checked == Class
-    my_each { |item| return false unless item =~ classification } if checked == Regexp
-    my_each { |item| return false unless item == classification } if [Integer, String].include?(checked)
-    my_each { |item| return false unless item } if !classification && !block_given?
-    test
+  def my_all?(*arg)
+    return grep(arg.first).length == size unless arg.empty?
+
+    my_each { |el| return false unless yield(el) } if block_given?
+
+    my_each { |el| return false unless el } unless block_given?
+
+    true
   end
 
-  def my_any?(classification = nil)
-    test = false
-    my_each { |item| return true if yield(item) == true } if block_given?
-    my_each { |item| return true if item.class == classification } if classification.class == Class
-    my_each { |item| return true if item =~ classification } if classification.class == Regexp
-    my_each { |item| return true if item == classification } if [Integer, String].include?(classification.class)
-    my_each { |item| return true if item } if !classification && !block_given?
-    test
+  def my_any?(*arg)
+    return !grep(arg.first).empty? unless arg.empty?
+
+    my_each { |el| return true if yield(el) } if block_given?
+
+    my_each { |el| return true if el } unless block_given?
+
+    false
   end
 
-  def my_none?(classification = nil)
-    test = true
-    my_each { |item| return false if yield(item) == true } if block_given?
-    my_each { |item| return false if item.class == classification } if classification.class == Class
-    my_each { |item| return false if item =~ classification } if classification.class == Regexp
-    my_each { |item| return false if item == classification } if [Integer, String].include?(classification.class)
-    my_each { |item| return false if item } if !classification && !block_given?
-    test
+  def my_none?(*arg)
+    return grep(arg.first).empty? unless arg.empty?
+
+    my_each { |el| return false if yield(el) } if block_given?
+
+    my_each { |el| return false if el } unless block_given?
+
+    true
   end
 
-  def my_count(classification = nil)
-    counter = 0
-    my_each { |item| counter += 1 if item == classification } if [Integer, String].include?(classification.class)
-    my_each { |item| counter += 1 if yield(item) == true } if block_given?
-    my_each { |item| counter += 1 if item.class == classification } if classification.class == Class
-    return length if !classification && !block_given?
+  def my_count(*arg)
+    return my_select { |el| el == arg.first }.length unless arg.empty?
 
-    counter
+    return my_select { |el| yield el }.length if block_given?
+
+    size
   end
 
   def my_map(&my_proc)
@@ -85,15 +82,15 @@ module Enumerable
     result
   end
 
-  def my_inject(total = nil, current = nil)
-    arr = is_a?(Range) ? to_a : self
-    beginner = total.nil? || total.is_a?(Symbol) ? arr[0] : total
-    if block_given?
-      start = total ? 0 : 1
-      arr[start..-1].my_each { |item| beginner = yield(beginner, item) }
-    end
-    arr[1..-1].my_each { |item| beginner = beginner.send(total, item) } if total.is_a?(Symbol)
-    arr[0..-1].my_each { |item| beginner = beginner.send(current, item) } if current
-    beginner
+  def my_inject(*arg)
+    return to_enum(:my_inject) unless block_given?
+
+    result = arg.empty? ? first : arg.first
+    1.upto(length - 1) { |index| result = yield(result, to_a[index]) }
+    result
   end
+end
+
+def multiply_els(arr)
+  arr.my_inject { |accum, current| accum * current }
 end
