@@ -4,9 +4,11 @@ module Enumerable
   def my_each
     return to_enum(:my_each) unless block_given?
 
+    arr = is_a?(Enumerable) && !is_a?(Array) ? to_a : self
+
     i = 0
     while i < size
-      yield(self[i])
+      yield(arr[i])
       i += 1
     end
     self
@@ -82,15 +84,19 @@ module Enumerable
     result
   end
 
-  def my_inject(*arg)
-    return to_enum(:my_inject) unless block_given?
+  def my_inject(arg = nil)
+    res = [Integer, Float].include?(arg.class) ? arg : first
+    arr = to_a
 
-    result = arg.empty? ? first : arg.first
-    1.upto(length - 1) { |index| result = yield(result, to_a[index]) }
-    result
+    if block_given?
+      if arg && [Integer, Float].include?(arg.class)
+        my_each { |el| res = yield(res, el) }
+      else
+        arr[1..-1].my_each { |el| res = yield(res, el) }
+      end
+    end
+    arr[1..-1].my_each { |el| res = res.send(arg, el) } if arg.is_a? Symbol
+
+    res
   end
-end
-
-def multiply_els(arr)
-  arr.my_inject { |accum, current| accum * current }
 end
