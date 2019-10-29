@@ -84,19 +84,22 @@ module Enumerable
     result
   end
 
-  def my_inject(arg = nil)
-    res = [Integer, Float].include?(arg.class) ? arg : first
-    arr = to_a
-
-    if block_given?
-      if arg && [Integer, Float].include?(arg.class)
-        my_each { |el| res = yield(res, el) }
-      else
-        arr[1..-1].my_each { |el| res = yield(res, el) }
-      end
+  def my_inject(*arg)
+    res = nil
+    if arg.first && [Integer, Float].include?(arg.first.class)
+      res = arg.first
+      arr = to_a
+    else
+      res = first
+      arr = to_a[1..-1]
     end
-    arr[1..-1].my_each { |el| res = res.send(arg, el) } if arg.is_a? Symbol
-
+    if block_given?
+      arr.my_each { |el| res = yield(res, el) }
+    elsif arg.last.is_a? Symbol
+      arr.my_each { |el| res = arg.last.to_proc.call(res, el) }
+    else
+      res = to_enum
+    end
     res
   end
 end
