@@ -23,4 +23,19 @@ RSpec.describe Enumerable do
       end
     end
   end
+
+  describe '#my_each_with_index' do
+    context 'If block is not given' do
+      it 'returns an enumerable object' do
+        expect(arr.my_each_with_index.is_a?(Enumerable)).to eql(true)
+      end
+    end
+
+    context 'If block is given' do
+      it 'returns the item and its index for each item in enum' do
+        %w[cat dog wombat].my_each_with_index { |_item, index| new_arr << index }
+        expect(new_arr).to eql([0, 1, 2])
+      end
+    end
+  end
 end
