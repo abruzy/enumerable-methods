@@ -8,7 +8,7 @@ RSpec.describe Enumerable do
   describe '#my_each' do
     let(:new_arr_each) { [] }
     context 'If block is not given' do
-      it 'Return enumerable object' do
+      it 'return enumerable object' do
         expect(new_arr_each.my_each.is_a?(Enumerable)).to eql(true)
       end
     end
