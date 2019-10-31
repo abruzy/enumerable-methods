@@ -38,4 +38,18 @@ RSpec.describe Enumerable do
       end
     end
   end
+
+  describe '#my_select' do
+    context 'If block is not given' do
+      it 'returns an enumerable object' do
+        expect(arr.my_select.is_a?(Enumerable)).to eql(true)
+      end
+    end
+
+    context 'If block is given' do
+      it 'returns an array containing all elements of enum for which the given block returns a true value' do
+        expect(arr.my_select(&:even?)).to eql([2, 4, 6])
+      end
+    end
+  end
 end
